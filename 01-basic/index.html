@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Document</title>
+  <link rel="stylesheet" href="01_main.css">
+</head>
+<body>
+  <div class="wrapper">
+    <div class="scroll" style="top: 0">
+      <ul></ul>
+    </div>
+  </div>
+</body>
+<script>
+
+var ul = document.querySelector('ul')
+var scroll = document.querySelector('.scroll')
+var wrapper = document.querySelector('.wrapper')
+
+var state = {
+  startTouch: undefined,
+  startTouchTime: undefined,
+  startTranslate: undefined,
+  moveTouch: undefined,
+  minTranslate: 0,
+  maxtranslate: undefined
+}
+
+function render () {
+  var str = ''
+  for (let i = 0; i < 50; i++) {
+    str += '<li>我是第'+(i+1)+'条</li>'
+  }
+  ul.innerHTML = str
+}
+
+function getMaxTranslate () {
+  var maxTop = scroll.offsetHeight - wrapper.clientHeight
+  state.maxtranslate = maxTop
+}
+
+function getPosition () {
+  var ret = scroll.style.top.replace('px', '')
+  return parseFloat(ret)
+}
+
+function setPosition (position) {
+  scroll.style.top = position + 'px'
+}
+
+function handleTouchStart (event) {
+  var touch = event.changedTouches[0]
+  state.startTouch = touch['pageY']
+  state.startTouchTime = +new Date()
+  state.startTranslate = getPosition()
+}
+
+function handleTouchMove (event) {
+  var touch = event.changedTouches[0]
+  var diff = touch['pageY'] - state.startTouch
+  var newPos = diff + state.startTranslate
+
+  if (newPos > state.minTranslate) {
+    newPos = state.minTranslate
+  }
+  if (newPos < -state.maxtranslate) {
+    newPos = -state.maxtranslate
+  }
+  console.log(newPos)
+  setPosition(newPos)
+}
+
+function handleTouchEnd (event) {
+
+}
+
+render()
+getMaxTranslate()
+
+wrapper.addEventListener('touchstart', handleTouchStart, false)
+wrapper.addEventListener('touchmove', handleTouchMove, false)
+wrapper.addEventListener('touchend', handleTouchEnd, false)
+</script>
+</html>
