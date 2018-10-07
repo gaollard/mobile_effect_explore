@@ -20,6 +20,13 @@ ul, li {
 	height: 100%;
 	left: 0;
 	top: 0;
+	transition-timing-function: ease-in-out;
+  -webkit-transition-property: -webkit-transform;
+  transition-property: -webkit-transform;
+  -o-transition-property: transform;
+  transition-property: transform;
+  transition-property: transform,-webkit-transform;
+	/*transition-timing-function: cubic-bezier(0.35,-0.37, 1,-0.1);*/
 }
 
 .swiper-slide {
