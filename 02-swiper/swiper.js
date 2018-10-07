@@ -60,6 +60,8 @@ Swiper.prototype._initStyle = function () {
 	this.width = containerWidth
 	this.height = containerHeight
 	this.translate = 0
+	this.minTranslate = 0
+	this.maxTranslate = containerWidth * (length - 1)
 	slideMain.style.width = containerWidth * length + 'px'
 	slideMain.style.transform = 'translate3d(0px, 0px, 0px)'
 	slideList.forEach((slide) => {
@@ -73,6 +75,10 @@ Swiper.prototype._initEvents = function () {
 	this.$container.addEventListener('touchend', this._onToucEnd.bind(this), false)
 }
 
+Swiper.prototype._updateTranslate = function (newTranslate) {
+	setTranslate(this.$swiperMain, newTranslate)
+}
+
 Swiper.prototype._onTouchStart = function (event) {
 	var point = event['changedTouches'][0]
 	this.touchStartPoint = point['pageX']
@@ -84,12 +90,20 @@ Swiper.prototype._onTouchMove = function (event) {
 	var point = event['changedTouches'][0]
 	var diff = point['pageX'] - this.touchStartPoint
 	var newTranslate = this.touchStartTranslate + diff
-	setTranslate(this.$swiperMain, newTranslate)
+	this._updateTranslate(newTranslate)
 	this.translate = newTranslate
 }
 
 Swiper.prototype._onToucEnd = function (event) {
-	console.log(this.translate / this.width)
+	var newIndex = Math.round(-this.translate / this.width)
+	var translate = newIndex * this.width
+	if (translate < this.minTranslate) {
+		translate = this.minTranslate
+	}
+	if (translate > this.maxTranslate) {
+		translate = this.maxTranslate
+	}
+	this._updateTranslate(-translate)
 }
 
 Swiper.prototype.resize = function () {
