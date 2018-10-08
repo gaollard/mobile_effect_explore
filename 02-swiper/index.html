@@ -8,12 +8,22 @@
 	<link rel="stylesheet" href="main.css">
 </head>
 <body>
+	<!-- <div style="height: 100px;"></div> -->
 	<div class="swiper-container"></div>
+	<div class="data"></div>
+	<div style="height: 1000px"></div>
 <script src="swiper.js"></script>
 <script>
 	new Swiper('.swiper-container', {
 		list: [1, 2, 3]
 	})
+	var slide01 = document.querySelectorAll('.swiper-slide')
+	slide01.forEach((item, index) => {
+		item.onclick = function () {
+			console.log(index)
+		}
+	})
+	var $dataEl = document.querySelector('.data')
 </script>
 </body>
 </html>

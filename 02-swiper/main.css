@@ -59,4 +59,9 @@ ul, li {
 	height: 8px;
 	margin: 0 5px;
 	background: #ddd;
+	transition: all 400ms;
+}
+
+.swiper-nav .item.is-active {
+	background-color: red;
 }

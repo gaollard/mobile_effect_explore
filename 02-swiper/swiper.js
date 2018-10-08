@@ -1,7 +1,3 @@
-function getStyle (element) {
-	return 
-}
-
 function setTranslate (element, translate) {
 	element.style.transform
 		= element.style.WebkitTransform
@@ -72,12 +68,14 @@ Swiper.prototype._initStyle = function () {
 	slideList.forEach((slide) => {
 		slide.style.width = containerWidth + 'px'
 	})
+	this._updateActiveIndex(0)
 }
 
 Swiper.prototype._initEvents = function () {
 	this.$container.addEventListener('touchstart', this._onTouchStart.bind(this), false)
 	this.$container.addEventListener('touchmove', this._onTouchMove.bind(this), false)
-	this.$container.addEventListener('touchend', this._onToucEnd.bind(this), false)
+	this.$container.addEventListener('touchend', this._onTouchEnd.bind(this), false)
+	this.$container.addEventListener('touchcancel', this._onTouchCancel.bind(this), false)
 	this.$swiperMain.addEventListener('transitionend', this._onTransitionEnd.bind(this), false)
 }
 
@@ -89,47 +87,98 @@ Swiper.prototype._updateTransition = function (duration) {
 	setTransition(this.$swiperMain, duration)
 }
 
+Swiper.prototype._resetTouchState = function () {
+	this.isAnimating = false
+	this.touchStartPoint = undefined
+	this.touchStartTime = undefined
+	this.isTouched = undefined
+	this.isMoved = undefined
+}
+
+Swiper.prototype._onTouchCancel = function (event) {
+	this._resetTouchState()
+}
+
 Swiper.prototype._onTouchStart = function (event) {
+	if (this.isTouched) { return }
 	var point = event['changedTouches'][0]
-	if (this.isAnimating) {
-		return
-	}
-	this.touchStartPoint = point['pageX']
+	this.touchStartPoint = point
 	this.touchStartTime = +new Date()
 	this.touchStartTranslate = getTranslate(this.$swiperMain)['x']
 	this._updateTransition(0)
+	this.isTouched = true
 }
 
 Swiper.prototype._onTouchMove = function (event) {
-	if (this.isAnimating) {
+	if (this.isAnimating || !this.isTouched) {
 		return
 	}
 	var point = event['changedTouches'][0]
-	var diff = point['pageX'] - this.touchStartPoint
+	var diffX = point['pageX'] - this.touchStartPoint['pageX']
+	var diffY = point['pageY'] - this.touchStartPoint['pageY']
+	// 水平移动
+	if (Math.abs(diffX) > Math.abs(diffY)) {
+		event.preventDefault();
+	}
+	if (Math.abs(diffX) < Math.abs(diffY)) {
+		return
+	}
+	$dataEl.innerHTML = diffX + ',' + diffY
+	var diff = diffX
 	var newTranslate = this.touchStartTranslate + diff
 	this._updateTranslate(newTranslate)
 	this.translate = newTranslate
+	this.isMoved = true
+	this.diff = diff
 }
 
-Swiper.prototype._onToucEnd = function (event) {
-	if (this.isAnimating) {
+Swiper.prototype._updateActiveIndex = function (activeIndex) {
+	this.activeIndex = activeIndex
+	var navItems = this.$swiperNav.querySelectorAll('.item')
+	navItems.forEach((item, index) => {
+		if (index === activeIndex) {
+			item.className="item is-active"
+		} else {
+			item.className="item"
+		}
+	})
+}
+
+Swiper.prototype._onTouchEnd = function (event) {
+	if (this.isAnimating || !this.isTouched) {
+		this._resetTouchState()
 		return
 	}
-	var newIndex = Math.round(-this.translate / this.width)
-	var translate = newIndex * this.width
-	if (translate < this.minTranslate) {
-		translate = this.minTranslate
+	var now = +new Date()
+	var len = this.param.list.length
+	var newIndex = this.activeIndex
+	var translate
+	if (now - this.touchStartTime < 300) {
+		// 下一张
+		if (this.diff > 0) {
+			newIndex--
+		}
+		if (this.diff < 0) {
+			newIndex++
+		}
+	} else {
+		newIndex = Math.round(-this.translate / this.width)
 	}
-	if (translate > this.maxTranslate) {
-		translate = this.maxTranslate
+	if (newIndex < 0) {
+		newIndex = 0
 	}
+	if (newIndex > (len - 1)) {
+		newIndex = len - 1
+	}
+	translate = newIndex * this.width
 	this._updateTransition(400)
 	this.isAnimating = true
 	this._updateTranslate(-translate)
+	this._updateActiveIndex(newIndex)
 }
 
 Swiper.prototype._onTransitionEnd = function () {
-	this.isAnimating = false
+	this._resetTouchState()
 }
 
 Swiper.prototype.resize = function () {
