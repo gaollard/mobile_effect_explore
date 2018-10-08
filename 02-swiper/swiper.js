@@ -116,10 +116,7 @@ Swiper.prototype._onTouchMove = function (event) {
 	var point = event['changedTouches'][0]
 	var diffX = point['pageX'] - this.touchStartPoint['pageX']
 	var diffY = point['pageY'] - this.touchStartPoint['pageY']
-	// 水平移动
-	if (Math.abs(diffX) > Math.abs(diffY)) {
-		event.preventDefault();
-	}
+	event.preventDefault();
 	if (Math.abs(diffX) < Math.abs(diffY)) {
 		return
 	}
